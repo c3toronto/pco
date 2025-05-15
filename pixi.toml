@@ -1,0 +1,27 @@
+[project]
+authors = ["Sejin Kim <hello@sejin.kim>"]
+channels = ["conda-forge"]
+description = "Add a short description here"
+name = "pco"
+platforms = ["win-64"]
+version = "0.1.0"
+
+[dependencies]
+python = "3.11.*"
+pytest = ">=8.3.5,<9"
+selenium = ">=4.32.0,<5"
+
+[environments]
+xxx = ["xxx"]
+
+[activation]
+env.CONFIG = "DEFAULT_CONFIG"
+
+[feature.xxx.activation]
+env.FCONFIG = "FEATURE_CONFIG"
+
+[tasks]
+echo = "echo $CONFIG"
+
+[feature.xxx.tasks]
+echor = "echo $CONFIG"
