@@ -19,8 +19,8 @@ def logged_in_driver(driver):
 
   # don't re-login if already logged in
   if len(driver.find_elements(By.ID, "email")) > 0 and len(driver.find_elements(By.ID, "password")) > 0:
-    driver.find_element(By.ID, "email").send_keys() 
-    driver.find_element(By.ID, "password").send_keys()
+    driver.find_element(By.ID, "email").send_keys(os.environ("PCO_EMAIL")) 
+    driver.find_element(By.ID, "password").send_keys(os.environ("PCO_PASSWORD"))
     driver.find_element(By.NAME, "commit").click()
     driver.find_element(By.CSS_SELECTOR, ".pane:nth-child(2) > .btn").click()
   
