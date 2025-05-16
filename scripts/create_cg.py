@@ -3,7 +3,7 @@ from pypco import PCO
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 import pandas as pd
-from utils.tags import tag_season, tag_campus, tag_group_type, tag_regularity
+from pco.utils.tags import tag_season, tag_campus, tag_group_type, tag_regularity
 
 def init_driver():
     """
@@ -13,23 +13,23 @@ def init_driver():
     driver.set_window_size(1200, 1000)
     return driver
 
-def logged_in_driver(driver: webdriver.Chrome):
+def logged_in_driver(d: webdriver.Chrome):
     """
     Login to Planning Center Online (PCO) using Selenium WebDriver.
     """
     # Login steps
-    driver.get("https://login.planningcenteronline.com/login/new")
-    # print(driver.find_elements(By.ID, "email"), driver.find_elements(By.ID, "password"))
-    driver.implicitly_wait(2)
+    d.get("https://login.planningcenteronline.com/login/new")
+    # print(d.find_elements(By.ID, "email"), d.find_elements(By.ID, "password"))
+    d.implicitly_wait(2)
 
     # don't re-login if already logged in
-    if len(driver.find_elements(By.ID, "email")) > 0 and len(driver.find_elements(By.ID, "password")) > 0:
-        driver.find_element(By.ID, "email").send_keys(os.environ["PCO_EMAIL"]) 
-        driver.find_element(By.ID, "password").send_keys(os.environ["PCO_PASSWORD"])
-        driver.find_element(By.NAME, "commit").click()
-        driver.find_element(By.CSS_SELECTOR, ".pane:nth-child(2) > .btn").click()
+    if len(d.find_elements(By.ID, "email")) > 0 and len(d.find_elements(By.ID, "password")) > 0:
+        d.find_element(By.ID, "email").send_keys(os.environ["PCO_EMAIL"]) 
+        d.find_element(By.ID, "password").send_keys(os.environ["PCO_PASSWORD"])
+        d.find_element(By.NAME, "commit").click()
+        d.find_element(By.CSS_SELECTOR, ".pane:nth-child(2) > .btn").click()
     
-    return driver
+    return d
 
 def create_cg(logged_in_driver: webdriver.Chrome, group_name: str, location: str):
     """
@@ -159,7 +159,65 @@ def get_tag_ids(season: str, campus: str, group_type: str, regularity: str):
     tags = [tag for tag in tags if tag is not None]
     return tags
 
+def find_person(pco: PCO, name: str):
+    """
+    Find a person by name via the PCO API.
+
+    Args:
+        pco (PCO): PCO API client.
+        name (str): The name of the person to search for.
+    Returns:
+        dict: The response from the API call.
+    """
+    try:
+        data = pco.get(f'/people/v2/people?where[search_name]={name}')
+        print(f"Number of people matching {name}: {len(data['data'])}")
+        if data['data']:
+            person_id = data['data'][0]['id']
+            return person_id
+        else:
+            print(f"No person found with name: {name}")
+            return
+    except Exception as e:
+        print(f"Error fetching pers on ID for {name}: {e}")
+        return
+
+def add_member(pco: PCO, 
+               group_id: int, 
+               member_id: int, 
+               role: str = "leader"):
+    """
+    Add members to a group via the PCO API.
+
+    Args:
+        pco (PCO): PCO API client.
+        group_id (int): The ID of the group to add members to.
+        members (list): A list of member IDs to add.
+    Returns:
+        dict: The response from the API call.
+    """
+    import datetime as dt
+    now_utc = dt.datetime.now(dt.timezone.utc)
+    # create payload
+    attributes = {
+        "person_id": int(member_id),
+        "joined_at": now_utc.strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "role": role
+    }
+    response = pco.post(f'/groups/v2/groups/{group_id}/memberships', payload={"data": {"attributes": attributes}})
+    return response
+
 def main(cg_path: str = None):
+    """
+    This can be run as a script to create connect groups in PCO.
+
+    Steps:
+    1. Initialize the Selenium WebDriver.
+    2. Login to PCO.
+    3. Create connect group with name, location, and enable chat.
+    4. Update group attributes of season, campus, group type, regularity, and schedule.
+    5. Add one leader to the group. (for now, only one leader is supported)
+    """
     driver_init = init_driver()
     pco = PCO(os.environ["PCO_APP_ID"], os.environ["PCO_API_KEY"])
     
@@ -188,8 +246,17 @@ def main(cg_path: str = None):
                     tags=tags,
                     schedule=row['schedule'] if 'schedule' in row else None,)
 
+        # Add members to group
+        if 'leader' in row:
+            leader_name = row['leader']
+            member_id = find_person(pco, leader_name)
+            if member_id:
+                add_member(pco, get_group_id(pco, group_name), member_id)
+                print(f"Added {leader_name} to {group_name} as leader")
+            else:
+                print(f"{leader_name} not found")
 
 
 if __name__ == "__main__":
-    cg_path = "./test.csv"
+    cg_path = os.environ["CONNECT_GROUPS_CSV"]
     main(cg_path)

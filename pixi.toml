@@ -17,6 +17,11 @@ PCO_EMAIL = ""
 PCO_PASSWORD = ""
 PCO_APP_ID = ""
 PCO_API_KEY = ""
+CONNECT_GROUPS_CSV = ""
 
 [pypi-dependencies]
 pypco = ">=1.2.0, <2"
+pco = { path = ".", editable = true }
+
+[tasks]
+make-cgs = "python scripts/create_cg.py"

@@ -72,6 +72,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/a8/05/5e33dbef7e2f773d672b6d79f10ec633d4a71cd96db6673625838a4fd532/charset_normalizer-3.4.2-cp311-cp311-win_amd64.whl
       - pypi: https://files.pythonhosted.org/packages/38/45/8d17ed101edf11508f0f69b0169979369ad0645b91348995f3a904b8ca1d/pypco-1.2.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/f9/9b/335f9764261e915ed497fcdeb11df5dfd6f7bf257d4a6a2a686d80da4d54/requests-2.32.3-py3-none-any.whl
+      - pypi: .
 packages:
 - conda: https://conda.anaconda.org/conda-forge/noarch/attrs-25.3.0-pyh71513ae_0.conda
   sha256: 99c53ffbcb5dc58084faf18587b215f9ac8ced36bbfb55fa807c00967e419019
@@ -247,8 +248,6 @@ packages:
 - conda: https://conda.anaconda.org/conda-forge/win-64/intel-openmp-2024.2.1-h57928b3_1083.conda
   sha256: 0fd2b0b84c854029041b0ede8f4c2369242ee92acc0092f8407b1fe9238a8209
   md5: 2d89243bfb53652c182a7c73182cce4f
-  arch: x86_64
-  platform: win
   license: LicenseRef-IntelSimplifiedSoftwareOct2022
   license_family: Proprietary
   purls: []
@@ -265,8 +264,6 @@ packages:
   - blas =2.131=mkl
   - liblapacke =3.9.0=31*_mkl
   - liblapack =3.9.0=31*_mkl
-  arch: x86_64
-  platform: win
   license: BSD-3-Clause
   license_family: BSD
   purls: []
@@ -282,8 +279,6 @@ packages:
   - blas =2.131=mkl
   - liblapacke =3.9.0=31*_mkl
   - liblapack =3.9.0=31*_mkl
-  arch: x86_64
-  platform: win
   license: BSD-3-Clause
   license_family: BSD
   purls: []
@@ -324,8 +319,6 @@ packages:
   - ucrt >=10.0.20348.0
   - vc >=14.2,<15
   - vc14_runtime >=14.29.30139
-  arch: x86_64
-  platform: win
   license: BSD-3-Clause
   license_family: BSD
   purls: []
@@ -338,8 +331,6 @@ packages:
   - ucrt >=10.0.20348.0
   - vc >=14.2,<15
   - vc14_runtime >=14.29.30139
-  arch: x86_64
-  platform: win
   license: LGPL-2.1-only
   purls: []
   size: 638142
@@ -354,8 +345,6 @@ packages:
   - libcblas =3.9.0=31*_mkl
   - blas =2.131=mkl
   - liblapacke =3.9.0=31*_mkl
-  arch: x86_64
-  platform: win
   license: BSD-3-Clause
   license_family: BSD
   purls: []
@@ -394,8 +383,6 @@ packages:
   constrains:
   - pthreads-win32 <0.0a0
   - msys2-conda-epoch <0.0a0
-  arch: x86_64
-  platform: win
   license: MIT AND BSD-3-Clause-Clear
   purls: []
   size: 35794
@@ -409,8 +396,6 @@ packages:
   - ucrt >=10.0.20348.0
   - vc >=14.2,<15
   - vc14_runtime >=14.29.30139
-  arch: x86_64
-  platform: win
   license: MIT
   license_family: MIT
   purls: []
@@ -436,8 +421,6 @@ packages:
   depends:
   - intel-openmp 2024.*
   - tbb 2021.*
-  arch: x86_64
-  platform: win
   license: LicenseRef-IntelSimplifiedSoftwareOct2022
   license_family: Proprietary
   purls: []
@@ -457,8 +440,6 @@ packages:
   - vc14_runtime >=14.29.30139
   constrains:
   - numpy-base <0a0
-  arch: x86_64
-  platform: win
   license: BSD-3-Clause
   license_family: BSD
   purls:
@@ -548,14 +529,17 @@ packages:
   - fsspec >=2022.11.0
   - pytables >=3.8.0
   - xlsxwriter >=3.0.5
-  arch: x86_64
-  platform: win
   license: BSD-3-Clause
   license_family: BSD
   purls:
   - pkg:pypi/pandas?source=hash-mapping
   size: 14530915
   timestamp: 1744431484551
+- pypi: .
+  name: pco
+  version: '0.5'
+  sha256: 4ab9b3e2e869e3ae540f9cfb7b4e876c548bb6f9d729ba4b96e27f1b74fda667
+  editable: true
 - conda: https://conda.anaconda.org/conda-forge/noarch/pluggy-1.5.0-pyhd8ed1ab_1.conda
   sha256: 122433fc5318816b8c69283aaf267c73d87aa2d09ce39f64c9805c9a3b264819
   md5: e9dcbce5f45f9ee500e728ae58b605b6
@@ -771,8 +755,6 @@ packages:
   - ucrt >=10.0.20348.0
   - vc >=14.2,<15
   - vc14_runtime >=14.29.30139
-  arch: x86_64
-  platform: win
   license: Apache-2.0
   license_family: APACHE
   purls: []
