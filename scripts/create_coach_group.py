@@ -31,9 +31,9 @@ def logged_in_driver(d: webdriver.Chrome):
     
     return d
 
-def create_cg(logged_in_driver: webdriver.Chrome, group_name: str, location: str):
+def create_coach_group(logged_in_driver: webdriver.Chrome, group_name: str):
     """
-    Create a new Connect Group in Planning Center Online (PCO) using Selenium WebDriver.
+    Create a new Coach Group in Planning Center Online (PCO) using Selenium WebDriver.
 
     Args:
         logged_in_driver (webdriver.Chrome): The logged-in Selenium WebDriver instance.
@@ -45,7 +45,7 @@ def create_cg(logged_in_driver: webdriver.Chrome, group_name: str, location: str
     # save me
     d = logged_in_driver
     
-    ### CREATE CONNECT GROUP ###
+    ### CREATE COACH GROUP ###
     d.implicitly_wait(2)
     # 1 | open | /my_groups | 
     d.get("https://groups.planningcenteronline.com/groups")
@@ -56,7 +56,7 @@ def create_cg(logged_in_driver: webdriver.Chrome, group_name: str, location: str
     d.find_element(By.ID, "group_group_type_id").click()
     # 6 | select | id=group_group_type_id | label=Connect Groups
     dropdown = d.find_element(By.ID, "group_group_type_id")
-    dropdown.find_element(By.XPATH, "//option[. = 'Connect Groups']").click()
+    dropdown.find_element(By.XPATH, "//option[. = 'Coach Group']").click()
     # 7 | click | id=group_name | 
     d.find_element(By.ID, "group_name").click()
     # 8 | type | id=group_name | [TEST] Dev Selenium4
@@ -65,23 +65,6 @@ def create_cg(logged_in_driver: webdriver.Chrome, group_name: str, location: str
     d.find_element(By.XPATH, "//span[contains(.,'Create group')]").click()
     d.implicitly_wait(4)
 
-    ### ENABLE CHAT ###
-    # d.find_element(By.XPATH, "(//button[@type=\'button\'])[10]").click()
-    # d.find_element(By.LINK_TEXT, "View settings").click()
-    d.find_element(By.XPATH, "//a[contains(text(),'View settings')]").click()
-    d.implicitly_wait(2)
-
-    d.find_element(By.CSS_SELECTOR, ".btn:nth-child(4)").click()
-    d.implicitly_wait(2)
-
-    ### SET LOCATION ###
-    dropdown = d.find_element(By.CSS_SELECTOR, ".select--inline")
-    dropdown.find_element(By.XPATH, "//option[. = 'Create a new location...']").click()
-    d.implicitly_wait(2)
-
-    d.find_element(By.XPATH, "//div[2]/div/div/div/div/div/input").click()
-    d.find_element(By.XPATH, "//div[2]/div/div/div/div/div/input").send_keys(str(location))
-    d.implicitly_wait(2)
 
     return d
 
@@ -108,56 +91,6 @@ def get_group_id(pco: PCO, group_name: str):
         print(f"Error fetching group ID for {group_name}: {e}")
         return
 
-def patch_group(pco: PCO, 
-                group_id: int, 
-                name: str = None,
-                tags: int | list = None,
-                schedule: str = None):
-    """
-    Patch a group with new attributes via the PCO API.
-
-    Args:
-        pco (PCO): PCO API client.
-        group_id (int): The ID of the group to patch.
-        name (str, optional): New name for the group. Defaults to None.
-        tags (int | list, optional): New tag IDs for the group. Defaults to None.
-        schedule (str, optional): New schedule for the group. Defaults to None.
-    Returns:
-        dict: The response from the API call.
-    """
-    # create payload
-    attributes = {}
-    if name:
-        attributes['name'] = name
-    if schedule:
-        attributes['schedule'] = schedule
-    if tags:
-        attributes['tag_ids'] = tags
-
-    # make API call to update group
-    response = pco.patch(f'/groups/v2/groups/{group_id}', payload={"data": {"attributes": attributes}})
-    return response
-
-def get_tag_ids(season: str, campus: str, group_type: str, regularity: str):
-    """
-    Get the tag IDs for a given season, campus, group type, and regularity and return them as a list.
-
-    Args:
-        season (str): The season to tag.
-        campus (str): The campus to tag.
-        group_type (str): The group type to tag.
-        regularity (str): The regularity to tag.
-    Returns:
-        list: A list of tag IDs.
-    """
-    season_tag = tag_season(season)
-    campus_tag = tag_campus(campus)
-    group_type_tag = tag_group_type(group_type)
-    regularity_tag = tag_regularity(regularity)
-
-    tags = [season_tag, campus_tag, group_type_tag, regularity_tag]
-    tags = [tag for tag in tags if tag is not None]
-    return tags
 
 def find_person(pco: PCO, name: str):
     """
@@ -223,45 +156,40 @@ def main(cg_path: str = None):
     
     # Read CSV file of connect groups
     df = pd.read_csv(cg_path)
-    assert 'group_name' in df.columns, "group_name column not found in CSV"
+    assert 'Coach' in df.columns, "Coach column not found in CSV"
 
-    for _, row in df.iterrows():
+    for coach_name in df['Coach'].unique():
         driver = logged_in_driver(driver_init)
         driver.implicitly_wait(2)
 
-        group_name = row['group_name']
-        group_name = "Summer 2025 CG - " + group_name
-        location   = row['location'] if 'location' in row else None
-        driver = create_cg(driver, group_name, location)
+        group_name = "Summer 2025 Coach Group - " + coach_name.strip()
+        driver = create_coach_group(driver, group_name)
         print(f"Created group: {group_name}")
 
-        # Get mathcing tag IDs for season/campus/group type/regularity
-        tags = get_tag_ids (season=row['season'] if 'season' in row else None,
-                            campus=row['campus'] if 'campus' in row else None, 
-                            group_type=row['group_type'] if 'group_type' in row else None, 
-                            regularity=row['regularity'] if 'regularity' in row else None)
+        df_coach = df[df['Coach'] == coach_name]
+        coaches  = df_coach['Coach_Group_Lead_1'].unique().tolist() + df_coach['Coach_Group_Lead_2'].dropna().unique().tolist()
+        leaders  = df_coach['Leader'].tolist()
+        print(coaches, leaders)
 
-        # add Tags (Season, Campus, Group Type, Regularity) and Schedule here
-        patch_group(pco, 
-                    group_id=get_group_id(pco, group_name), 
-                    tags=tags,
-                    schedule=row['schedule'] if 'schedule' in row else None,)
 
-        # Add members to group
-        leaders = []
-        if 'leader' in row:
-            leaders.append(row['leader'])
-        if 'co-leaders' in row:
-            leaders += row['co-leaders'].split(",")
-
-        for leader_name in leaders:
-            member_id = find_person(pco, leader_name)
+        # Add leader to group
+        for coach in coaches:
+            member_id = find_person(pco, coach.strip())
             if member_id:
                 add_member(pco, get_group_id(pco, group_name), member_id)
-                print(f"Added {leader_name} to {group_name} as leader")
+                print(f"Added {coach} to {group_name} as leader")
             else:
-                print(f"{leader_name} not found")
+                print(f"{coach} not found")
+
+        # Add members to group
+        for leader in leaders:
+            member_id = find_person(pco, leader.strip())
+            if member_id:
+                add_member(pco, get_group_id(pco, group_name), member_id, role="member")
+                print(f"Added {leader} to {group_name} as member")
+            else:
+                print(f"{leader} not found")
 
 if __name__ == "__main__":
-    cg_path = os.environ["CONNECT_GROUPS_CSV"]
+    cg_path = os.environ["COACH_GROUPS_CSV"]
     main(cg_path)

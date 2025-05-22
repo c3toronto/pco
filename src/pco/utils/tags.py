@@ -4,9 +4,19 @@ I know this is super ugly and not the best way to do this,
 but NEXT TIME we will refactor this via YAML or match via the groups/tag_ids API.
 """
 
+def tag_demographics(demographics: str):
+    match demographics:
+        case "Men":
+            return 1992370
+        case "Women":
+            return 1992371
+        case "Mixed":
+            return 1992372
+
+
 def tag_group_type(group_type: str):
     match group_type:
-        case "Sermon Discussion":
+        case "Sermon-based":
             return 1992369
         case "Activity-based (with sermon discussion)":
             return 541206
@@ -14,7 +24,7 @@ def tag_group_type(group_type: str):
             return 541205
         case "Finding Freedom":
             return 1987210
-        case "Alpha":
+        case "Alpha (New Christians)":
             return 1987211
         case "Alpha Pre Marriage":
             return 1987212
@@ -42,18 +52,18 @@ def tag_season(season: str):
     match season:
         case "Fall 2024":
             return 541216
-        case "Winter 2025":
-            return 2007585
-        case "Summer 2025":
-            return 2007586
-        case "Fall 2025":
-            return 2007587
+        case "Winter":
+            return 2007585 #winter 2025
+        case "Summer":
+            return 2007586 #summer 2025
+        case "Fall":
+            return 2007587 #fall 2025
     return
 
 def tag_regularity(regularity: str):
     match regularity:
         case "Weekly":
             return 541217
-        case "Bi-Weekly":
+        case "Bi Weekly":
             return 541219
     return
